@@ -18,7 +18,7 @@
       "id": 1,
       "name": "Refined Concrete Soap",
       "price": 799,
-      "categoryId": 1
+      "categoryId": 2
     },
     {
       "id": 2,
@@ -391,6 +391,12 @@
       "price": 10,
       "categoryId": 1,
       "id": 63
+    },
+    {
+      "name": "add",
+      "price": 23,
+      "categoryId": 2,
+      "id": 64
     }
   ]
 }
