@@ -1,12 +1,9 @@
-import { it, expect, describe } from 'vitest'
+import { describe, it } from 'vitest'
+import { db } from './mocks/db'
 
 describe('group', () => {
-    it('should', async () => {
-        const res = await fetch("/categories")
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const data = await res.json();
-
-        console.log(data);
-        expect(data).toHaveLength(3);
-    })
+  it('should', () => {
+    const product = db.product.create({ name: 'Apple' })
+    console.log(db.product.delete({ where: { id: { equals: product.id } } }))
+  })
 })

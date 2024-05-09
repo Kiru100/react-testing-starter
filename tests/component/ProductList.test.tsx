@@ -1,9 +1,23 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor, waitForElementToBeRemoved } from '@testing-library/react';
 import { server } from '../mocks/server';
-import {http, HttpResponse} from "msw";
+import {http, HttpResponse, delay} from "msw";
 import ProductList from '../../src/components/ProductList';
+import { db } from '../mocks/db';
 
 describe('ProductList', () => {
+    const productIds : number[] = [];
+
+    beforeAll(()=>{
+        [1,2,3].forEach(()=>{
+            const product = db.product.create();
+            productIds.push(product.id);
+        })
+    });
+
+    afterAll(()=>{  
+        db.product.deleteMany({where: {id: { in: productIds}}})
+    })
+
     it('should render the list of product', async () => {
         render(<ProductList />)
 
@@ -18,5 +32,38 @@ describe('ProductList', () => {
 
         const message = await screen.findByText(/no products/i);
         expect(message).toBeInTheDocument();
+    })
+
+    it('should render an error for invalid http request', async () => {
+        server.use(http.get("/products", ()=> HttpResponse.error()));
+
+        render(<ProductList />)
+
+        expect(await screen.findByText(/error/i)).toBeInTheDocument();
+    })
+
+    it('should render a loading indicator when fetching data',  async () => {
+        server.use(http.get("/products", async ()=>{
+            await delay();
+            return HttpResponse.json([])
+        }));
+
+        render(<ProductList />)
+
+        expect(await screen.findByText(/loading/i)).toBeInTheDocument();
+    });
+
+    it('should remove the loading indicator after if data fetching is failed', async () => {
+        server.use(http.get("/products", ()=> HttpResponse.error()));
+
+        render(<ProductList />);
+
+        await waitForElementToBeRemoved(()=> screen.queryByText(/loading/i))
+    })
+
+    it('should remove the loading indicator after data is fetched', async () => {
+        render(<ProductList />);
+
+        await waitForElementToBeRemoved(()=> screen.queryByText(/loading/i))
     })
 })
